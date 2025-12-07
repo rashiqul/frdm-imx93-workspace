@@ -100,3 +100,9 @@ fi
 
 popd >/dev/null
 echo "Configured ${TARGET} in ${BUILD_DIR}"
+
+# Create symlink to compile_commands.json for VSCode IntelliSense
+if [[ -f "${BUILD_DIR}/compile_commands.json" ]]; then
+  ln -sf "${BUILD_DIR}/compile_commands.json" "${ROOT_DIR}/compile_commands.json"
+  echo "Created symlink: compile_commands.json -> ${BUILD_DIR}/compile_commands.json"
+fi
