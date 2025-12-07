@@ -12,5 +12,10 @@ if(fmt_FOUND)
 endif()
 if(spdlog_FOUND)
   target_compile_definitions(hello_a55 PRIVATE USE_SPDLOG=1)
-  target_link_libraries(hello_a55 PRIVATE spdlog::spdlog_header_only)
+  target_link_libraries(hello_a55 PRIVATE spdlog::spdlog)
 endif()
+
+# Install the executable
+install(TARGETS hello_a55
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        COMPONENT a55_apps)

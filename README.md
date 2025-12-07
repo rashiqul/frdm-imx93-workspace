@@ -77,6 +77,7 @@ See `docs/DOCKER_SETUP.md` for details.
 ```bash
 make configure TARGET=native|a55|m33  # Setup environment and configure CMake
 make build TARGET=native|a55|m33      # Compile and link
+make package                          # Create and test Conan package
 make run-a55 HOST=<ip/host>           # Deploy and run on A55 Linux
 make flash-m33                        # Flash M33 firmware
 make run-docker                       # Start Docker build container
@@ -229,19 +230,95 @@ rm -rf python/.venv
 make configure TARGET=native
 ```
 
-## Documentation
+## Conan Package
 
-- **CROSS_COMPILER_SETUP.md**: Step-by-step toolchain installation (apt, Linaro, Yocto SDK)
-- **DOCKER_SETUP.md**: Container-based development workflow
+This project can be packaged and shared as a Conan package:
 
-## Next Steps
+```bash
+# Quick package creation and testing
+make package
 
-1. **Explore examples**: Check `apps/a55/hello_app/` and `apps/m33/blinky/`
-2. **Add your code**: Create new applications in `apps/`
-3. **Implement drivers**: Add hardware drivers in `drivers/`
-4. **Test locally**: Use `TARGET=native` for rapid iteration
-5. **Deploy to board**: Use `TARGET=a55` or `TARGET=m33` for production builds
+# Or manually with Conan
+conan create . --build=missing
+```
+
+### Package Options
+
+- `build_a55`: Build A55 applications (default: True)
+- `build_m33`: Build M33 applications (default: False)
+- `with_fmt`: Include fmt library (default: True)
+- `shared`: Build as shared library (default: False)
+- `fPIC`: Position Independent Code (default: True)
+
+### Using in Another Project
+
+**conanfile.txt:**
+```ini
+[requires]
+imx93_workspace/0.1.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+```
+
+**conanfile.py:**
+```python
+from conan import ConanFile
+
+class MyProjectConan(ConanFile):
+    requires = "imx93_workspace/0.1.0"
+    
+    def configure(self):
+        self.options["imx93_workspace"].build_a55 = True
+```
+
+## Docker Development
+
+Use Docker for reproducible builds with all toolchains pre-installed:
+
+```bash
+# Start container
+make run-docker
+
+# Enter container
+make docker-shell
+
+# Inside container, build as usual
+make configure TARGET=a55
+make build TARGET=a55
+```
+
+**What's included:**
+- Cross-compilers for A55 (`gcc-aarch64-linux-gnu`) and M33 (`gcc-arm-none-eabi`)
+- CMake, Conan 2.x, Poetry
+- All build dependencies pre-configured
+
+## Advanced Documentation
+
+For detailed setup instructions, see:
+- **docs/CROSS_COMPILER_SETUP.md**: Installing cross-compilers (apt, Linaro, Yocto SDK)
 
 ## License
 
-[Your License Here]
+MIT License
+
+Copyright (c) 2025
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
