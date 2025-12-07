@@ -1,0 +1,32 @@
+# Toolchain for A55 (ARMv8‑A, aarch64) cross‑compile
+# Falls back to native compilers for testing if cross-compiler not available
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR aarch64)
+
+# Check if AARCH64_TOOLCHAIN is set and not empty, otherwise try system cross-compiler, else use native
+if(DEFINED ENV{AARCH64_TOOLCHAIN} AND NOT "$ENV{AARCH64_TOOLCHAIN}" STREQUAL "")
+  set(TOOLCHAIN_BIN $ENV{AARCH64_TOOLCHAIN})
+  set(CMAKE_C_COMPILER   ${TOOLCHAIN_BIN}/aarch64-linux-gnu-gcc CACHE FILEPATH "" FORCE)
+  set(CMAKE_CXX_COMPILER ${TOOLCHAIN_BIN}/aarch64-linux-gnu-g++ CACHE FILEPATH "" FORCE)
+  set(CMAKE_AR           ${TOOLCHAIN_BIN}/aarch64-linux-gnu-ar  CACHE FILEPATH "" FORCE)
+  set(CMAKE_RANLIB       ${TOOLCHAIN_BIN}/aarch64-linux-gnu-ranlib CACHE FILEPATH "" FORCE)
+  message(STATUS "Using cross-compiler from: ${TOOLCHAIN_BIN}")
+elseif(EXISTS /usr/bin/aarch64-linux-gnu-gcc)
+  set(CMAKE_C_COMPILER   /usr/bin/aarch64-linux-gnu-gcc CACHE FILEPATH "" FORCE)
+  set(CMAKE_CXX_COMPILER /usr/bin/aarch64-linux-gnu-g++ CACHE FILEPATH "" FORCE)
+  set(CMAKE_AR           /usr/bin/aarch64-linux-gnu-ar  CACHE FILEPATH "" FORCE)
+  set(CMAKE_RANLIB       /usr/bin/aarch64-linux-gnu-ranlib CACHE FILEPATH "" FORCE)
+  message(STATUS "Using system cross-compiler")
+else()
+  # Fallback to native for testing (won't run on actual hardware)
+  message(WARNING "Cross-compiler not found. Using native compiler for build testing only!")
+  set(CMAKE_SYSTEM_PROCESSOR ${CMAKE_HOST_SYSTEM_PROCESSOR})
+  unset(CMAKE_C_COMPILER CACHE)
+  unset(CMAKE_CXX_COMPILER CACHE)
+  unset(CMAKE_AR CACHE)
+  unset(CMAKE_RANLIB CACHE)
+endif()
+
+# Tune flags (adjust per your CPU/features)
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O2 -pipe -fPIC")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -fPIC")

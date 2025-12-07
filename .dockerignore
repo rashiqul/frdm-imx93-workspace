@@ -1,0 +1,55 @@
+# Do not include build directories
+build/
+build-*/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+python/.venv/
+python/dist/
+python/*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+cmake_install.cmake
+install_manifest.txt
+CMakeUserPresets.json
+compile_commands.json
+
+# Conan
+.conan/
+.conan2/
+conan_imports_manifest.txt
+conanbuildinfo.*
+conaninfo.txt
+graph_info.json
+
+# IDE / Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build outputs
+*.o
+*.a
+*.so
+*.elf
+*.bin
+*.hex
+*.map
+
+# Temporary files
+*.log
+*.tmp
+.cache/

@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  imx93-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: imx93-dev-env
+    volumes:
+      # Mount the entire project directory
+      - .:/workspace
+      # Persist build artifacts
+      - build-cache:/workspace/build
+      # Persist Poetry cache
+      - poetry-cache:/root/.cache/pypoetry
+      # Persist Conan cache
+      - conan-cache:/root/.conan2
+    working_dir: /workspace
+    # Keep container running
+    stdin_open: true
+    tty: true
+    # Optional: add network configuration if needed
+    # network_mode: bridge
+    environment:
+      - AARCH64_TOOLCHAIN=/usr/bin
+      - ARM_NONE_EABI_BIN=/usr/bin
+      - CONAN_PROFILE=default
+      - POETRY_VIRTUALENVS_IN_PROJECT=true
+    # Optional: limit resources
+    # deploy:
+    #   resources:
+    #     limits:
+    #       cpus: '4'
+    #       memory: 8G
+
+volumes:
+  build-cache:
+  poetry-cache:
+  conan-cache:

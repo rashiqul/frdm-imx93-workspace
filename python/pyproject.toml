@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "imx93-python"
+version = "0.1.0"
+description = "Python utilities/apps for FRDM-i.MX93"
+authors = ["You <you@example.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10"
+paramiko = "^3.4.0"
+pytest = "^8.3.0"
+pytest-cov = "^5.0.0"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+
+[build-system]
+requires = ["poetry-core>=1.8.0"]
+build-backend = "poetry.core.masonry.api"
