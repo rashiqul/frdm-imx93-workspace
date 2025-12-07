@@ -197,10 +197,95 @@ make configure TARGET=native
 make build TARGET=native
 ./build/native/apps/a55/hello_app/hello_a55
 
-# Test on actual hardware
+# Test on actual hardware (with network)
 make configure TARGET=a55
 make build TARGET=a55
 make run-a55 HOST=192.168.1.100
+
+# Test via UART (no network needed)
+make run-a55-uart DEVICE=/dev/ttyACM0 BAUD=115200
+```
+
+## UART-Only Workflow
+
+When Ethernet is unavailable, interact with the board exclusively via UART.
+
+### Prerequisites
+
+**Host Requirements:**
+```bash
+sudo apt-get install -y picocom lrzsz
+# Optional: add user to dialout group for device access
+sudo usermod -aG dialout $USER
+# Reboot or logout/login to apply group changes
+```
+
+**Board Requirements:**
+- Linux running on eMMC with shell access
+- `rz` and `sz` utilities installed (part of `lrzsz` package)
+
+### Usage
+
+#### Open Serial Console
+```bash
+make uart DEVICE=/dev/ttyACM0 BAUD=115200
+```
+This opens a console using `picocom` (fallback to `minicom` or `screen`). Exit with `Ctrl-A` `Ctrl-X`.
+
+> **Note**: FRDM-iMX93 typically uses `/dev/ttyACM0` or `/dev/ttyACM1`. Use `ls -l /dev/ttyACM*` to find your device.
+
+#### Build and Transfer Binary
+
+**Terminal 1: Start Transfer Process**
+```bash
+make run-a55-uart DEVICE=/dev/ttyACM0 BAUD=115200
+```
+
+**Terminal 2: On the Board Console**
+```bash
+# Wait for the prompt, then run:
+rz -b -E
+```
+
+The script will automatically:
+1. Configure and build the A55 target
+2. Prompt you to start `rz` on the board
+3. Send `hello_a55` via ZMODEM when you press Enter
+
+**On the Board After Transfer:**
+```bash
+chmod +x hello_a55
+./hello_a55
+```
+
+### Available UART Commands
+
+```bash
+make uart DEVICE=/dev/ttyACM0 BAUD=115200           # Open serial console
+make run-a55-uart DEVICE=/dev/ttyACM0 BAUD=115200   # Build + transfer + instructions
+```
+
+### Troubleshooting UART
+
+**Device not found:**
+```bash
+# List available serial devices
+ls -l /dev/ttyUSB* /dev/ttyACM*
+
+# Check permissions
+groups  # Should include 'dialout'
+```
+
+**Transfer fails:**
+- Ensure `rz` is running on the board **before** starting `sz` on host
+- Verify both host and board have `lrzsz` installed
+- Check serial cable and connections
+- Try lowering baud rate: `BAUD=9600`
+
+**Permission denied:**
+```bash
+sudo usermod -aG dialout $USER
+# Then logout and login, or reboot
 ```
 
 ## Troubleshooting
