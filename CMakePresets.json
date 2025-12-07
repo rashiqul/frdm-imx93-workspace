@@ -1,0 +1,71 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "native",
+      "displayName": "Native Build (local testing)",
+      "description": "Build natively for the host system (A55 apps only, for testing)",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/native",
+      "cacheVariables": {
+        "BUILD_A55": "ON",
+        "BUILD_M33": "OFF",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "a55",
+      "displayName": "A55 Cross-Compile (ARMv8-A / aarch64)",
+      "description": "Cross-compile for i.MX93 A55 cores (Linux userspace)",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/a55",
+      "toolchainFile": "${sourceDir}/toolchains/aarch64-imx93.cmake",
+      "cacheVariables": {
+        "BUILD_A55": "ON",
+        "BUILD_M33": "OFF",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "m33",
+      "displayName": "M33 Cross-Compile (Cortex-M33 / bare-metal)",
+      "description": "Cross-compile for i.MX93 M33 core (bare-metal / RTOS)",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build/m33",
+      "toolchainFile": "${sourceDir}/toolchains/arm-m33-none-eabi.cmake",
+      "cacheVariables": {
+        "BUILD_A55": "OFF",
+        "BUILD_M33": "ON",
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "native",
+      "displayName": "Build Native",
+      "configurePreset": "native",
+      "jobs": 0
+    },
+    {
+      "name": "a55",
+      "displayName": "Build A55",
+      "configurePreset": "a55",
+      "jobs": 0
+    },
+    {
+      "name": "m33",
+      "displayName": "Build M33",
+      "configurePreset": "m33",
+      "jobs": 0
+    }
+  ]
+}
