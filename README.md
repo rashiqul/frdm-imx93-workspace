@@ -74,15 +74,35 @@ See `docs/DOCKER_SETUP.md` for details.
 
 ## Available Make Commands
 
+### Build Commands
 ```bash
 make configure TARGET=native|a55|m33  # Setup environment and configure CMake
 make build TARGET=native|a55|m33      # Compile and link
 make package                          # Create and test Conan package
-make run-a55 HOST=<ip/host>           # Deploy and run on A55 Linux
+make clean                            # Remove all build artifacts
+```
+
+### A55 Deployment (Network - Primary Method)
+```bash
+make run-a55                          # Deploy to imx93.local (default)
+make run-a55 HOST=<ip>                # Deploy to specific host
+make run-a55 USER=<user>              # As specific user (default: rashiqul)
+make run-a55 DEPLOY=rsync             # Use rsync instead of scp
+make scp-a55 HOST=<ip>                # Build + scp deploy
+```
+
+### UART Console & Manual Transfer
+```bash
+make uart DEVICE=/dev/ttyACM0         # Open UART console
+make run-a55-uart DEVICE=/dev/ttyACM0 # Show UART transfer options
+```
+> **Note**: UART is for console access. Use SSH/SCP for file transfer.
+
+### Other Commands
+```bash
 make flash-m33                        # Flash M33 firmware
 make run-docker                       # Start Docker build container
 make docker-shell                     # Open shell in container
-make clean                            # Remove all build artifacts
 ```
 
 ## Project Structure
@@ -90,6 +110,7 @@ make clean                            # Remove all build artifacts
 ```
 imx93-apps-drivers/
 ├── CMakeLists.txt                    # Root build configuration
+├── CMakePresets.json                 # CMake presets (a55, m33, native)
 ├── Makefile                          # Convenience wrappers
 ├── conanfile.py                      # C++ dependencies
 ├── Dockerfile                        # Docker build environment
@@ -107,7 +128,10 @@ imx93-apps-drivers/
 ├── scripts/
 │   ├── configure.sh                  # Environment setup script
 │   ├── build.sh                      # Build wrapper
-│   ├── run_a55.sh                    # A55 deployment script
+│   ├── run_a55.sh                    # A55 SSH/SCP deployment
+│   ├── a55_scp_transfer.sh           # A55 SCP wrapper
+│   ├── a55_uart_transfer.sh          # UART transfer guidance
+│   ├── serial_connect.sh             # Open UART console
 │   ├── flash_m33.sh                  # M33 flashing script
 │   └── setup_env.sh                  # Environment variables
 ├── toolchains/
@@ -119,6 +143,34 @@ imx93-apps-drivers/
 ```
 
 ## Build System Details
+
+### CMake Presets (IDE-Friendly Alternative)
+
+This project includes `CMakePresets.json` for IDE integration and direct CMake usage:
+
+```bash
+# Configure with presets
+cmake --preset a55      # A55 cross-compile
+cmake --preset m33      # M33 bare-metal
+cmake --preset native   # Native build
+
+# Build with presets
+cmake --build --preset a55
+cmake --build --preset m33
+cmake --build --preset native
+```
+
+**Benefits:**
+- VSCode/CLion automatically detect and display presets
+- IntelliSense/autocomplete works correctly for target architecture
+- `compile_commands.json` generated automatically for language servers
+- Standard CMake workflow familiar to most developers
+
+**Presets vs Make:**
+- **Make commands**: Recommended for daily workflow (includes environment setup)
+- **CMake presets**: Best for IDE users and CI/CD systems
+
+Both approaches use the same configuration and produce identical builds.
 
 ### What Happens During Configuration?
 
@@ -287,6 +339,36 @@ groups  # Should include 'dialout'
 sudo usermod -aG dialout $USER
 # Then logout and login, or reboot
 ```
+
+### Deploying to Hardware
+
+#### A55 Deployment via Network (Recommended)
+
+```bash
+# Default deployment (to imx93.local as user rashiqul)
+make run-a55
+
+# Custom host and user
+make run-a55 HOST=192.168.1.100 USER=root
+
+# Use rsync for faster delta copies
+make run-a55 HOST=192.168.1.100 DEPLOY=rsync
+
+# Deploy any binary
+HOST=192.168.1.100 scripts/run_a55.sh path/to/my_binary
+```
+
+#### UART Console Access
+
+```bash
+# Open UART console for debugging
+make uart DEVICE=/dev/ttyACM0
+
+# View UART transfer options (for when network isn't available)
+make run-a55-uart DEVICE=/dev/ttyACM0
+```
+
+**Note**: SSH/SCP is the primary deployment method. UART is best for console access and debugging. For file transfer without network, consider SD card or USB storage.
 
 ## Troubleshooting
 
