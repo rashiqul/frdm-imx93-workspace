@@ -5,7 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: dev
     container_name: imx93-dev-env
+    image: imx93-dev-env:latest
     volumes:
       # Mount the entire project directory
       - .:/workspace

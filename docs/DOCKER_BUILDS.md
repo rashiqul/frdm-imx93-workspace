@@ -9,10 +9,11 @@ Build your i.MX93 applications in a reproducible Docker environment with all too
 ✅ **Team-friendly** - Everyone builds the same way  
 ✅ **CI/CD ready** - Perfect for automation  
 ✅ **Multi-target** - Both A55 and M33 in one container  
+✅ **Automatic** - Just `make configure` and `make build`
 
 ## Prerequisites
 
-Install Docker:
+Install Docker (one-time setup):
 ```bash
 # Ubuntu/Debian
 sudo apt update
@@ -23,41 +24,43 @@ sudo usermod -aG docker $USER
 # Or follow: https://docs.docker.com/get-docker/
 ```
 
-## Quick Start
+## Quick Start (Recommended Workflow)
 
-### 1. Build the Docker Image (One Time)
+### Option 1: Interactive Docker Shell (Recommended)
+
+Launch Docker and work inside:
 ```bash
-make docker-build
-```
+make run-docker
 
-This creates an image with:
-- Ubuntu 22.04 base
-- GCC aarch64-linux-gnu (A55)
-- GCC arm-none-eabi (M33)
-- CMake, Poetry, Conan
-- All build dependencies
+# You're now inside the Docker container!
+# All toolchains are available
 
-### 2. Build Your Applications
-
-**Build all targets:**
-```bash
-make docker-build-all
-```
-
-**Build specific target:**
-```bash
-make docker-configure TARGET=a55
-make docker-compile TARGET=a55
-```
-
-**Interactive development:**
-```bash
-make docker-shell
-# Now inside container:
 make configure TARGET=a55
 make build TARGET=a55
-exit
+
+make configure TARGET=m33  
+make build TARGET=m33
+
+# Check toolchains
+aarch64-linux-gnu-gcc --version
+arm-none-eabi-gcc --version
+
+exit  # Leave Docker when done
 ```
+
+### Option 2: Auto-Docker (From Outside Container)
+
+Commands automatically use Docker if available:
+```bash
+# These run inside Docker automatically
+make configure TARGET=a55
+make build TARGET=a55
+
+# No need to run 'make run-docker' first!
+```
+
+**Recommended**: Use Option 1 (interactive shell) for development.  
+Use Option 2 for CI/CD or quick one-off builds.
 
 ## Docker vs Local Builds
 
@@ -69,27 +72,52 @@ exit
 | Speed | Slightly slower | Native speed |
 | CI/CD | Perfect | Needs setup |
 
-## Docker Commands Reference
+## Command Reference
+
+### Docker Commands
 
 ```bash
-# Build the Docker image
-make docker-build
+make run-docker              # Launch interactive Docker shell (type 'exit' to quit)
+make shell                   # Alias for run-docker
+make configure TARGET=a55    # Auto-uses Docker if available
+make build TARGET=a55        # Auto-uses Docker if available
+make clean                   # Clean build artifacts
+```
 
-# Configure a target
-make docker-configure TARGET=a55
+### Local Build (Without Docker)
 
-# Compile a target
-make docker-compile TARGET=m33
+If Docker isn't available or you prefer local builds:
+```bash
+make local-configure TARGET=a55
+make local-build TARGET=a55
+```
 
-# Build all targets
-make docker-build-all
+### Complete Workflow Examples
 
-# Interactive shell
-make docker-shell
+**Interactive development (recommended):**
+```bash
+make run-docker
+# Now inside Docker:
+make configure TARGET=a55
+make build TARGET=a55
+make configure TARGET=m33
+make build TARGET=m33
+exit
+```
 
-# Clean everything (including Docker)
-make clean
-docker rmi imx93-dev-env
+**One-off builds (from outside Docker):**
+```bash
+# These automatically use Docker if available
+make configure TARGET=a55
+make build TARGET=a55
+```
+
+**CI/CD pipeline:**
+```bash
+# Build all targets in one go
+make configure TARGET=native && make build TARGET=native
+make configure TARGET=a55 && make build TARGET=a55
+make configure TARGET=m33 && make build TARGET=m33
 ```
 
 ## How It Works
