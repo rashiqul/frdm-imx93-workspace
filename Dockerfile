@@ -1,10 +1,10 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 AS base
 
 # Prevent interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
-# Install base dependencies
+# Install base dependencies in one layer
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
@@ -18,20 +18,13 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install cross-compilers for A55 (aarch64)
-RUN apt-get update && apt-get install -y \
+    # A55 cross-compilers (aarch64)
     gcc-aarch64-linux-gnu \
     g++-aarch64-linux-gnu \
     binutils-aarch64-linux-gnu \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install ARM Cortex-M toolchain for M33
-RUN apt-get update && apt-get install -y \
+    # M33 ARM Cortex-M toolchain
     gcc-arm-none-eabi \
     binutils-arm-none-eabi \
-    newlib-arm-none-eabi \
     libnewlib-arm-none-eabi \
     && rm -rf /var/lib/apt/lists/*
 
@@ -39,15 +32,59 @@ RUN apt-get update && apt-get install -y \
 RUN pipx install poetry && pipx ensurepath
 ENV PATH="/root/.local/bin:${PATH}"
 
-# Set up environment variables for toolchains
+# Set up environment variables for toolchains (auto-discovered but explicit here)
 ENV AARCH64_TOOLCHAIN=/usr/bin
 ENV ARM_NONE_EABI_BIN=/usr/bin
 
 # Set working directory
 WORKDIR /workspace
 
-# Copy project files
+# ============================================================================
+# Builder stage: for running builds
+# ============================================================================
+FROM base AS builder
+
+# Copy only dependency files first (for caching)
+COPY python/pyproject.toml python/poetry.lock* /workspace/python/
+
+# Install Python dependencies
+RUN cd /workspace/python && \
+    poetry install --no-root && \
+    poetry run pip install cmake ninja conan
+
+# Copy the rest of the project
 COPY . /workspace/
+
+# Verify toolchains are available
+RUN aarch64-linux-gnu-gcc --version && \
+    arm-none-eabi-gcc --version && \
+    echo "✅ Both toolchains ready"
+
+# ============================================================================
+# Development stage: for interactive development
+# ============================================================================
+FROM builder AS dev
+
+# Add helpful development tools
+RUN apt-get update && apt-get install -y \
+    vim \
+    nano \
+    htop \
+    tree \
+    sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a user group and user that will match host UID/GID
+# Default to 1000:1000 but docker-compose will override with actual host values
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+RUN groupadd -g ${GROUP_ID} -o user && \
+    useradd -u ${USER_ID} -g ${GROUP_ID} -o -m -s /bin/bash user && \
+    echo "user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Ensure Poetry/Conan cache directories have correct permissions
+RUN mkdir -p /home/user/.cache/pypoetry /home/user/.conan2 && \
+    chown -R ${USER_ID}:${GROUP_ID} /home/user
 
 # Install Python dependencies and build tools
 RUN cd /workspace/python && poetry install

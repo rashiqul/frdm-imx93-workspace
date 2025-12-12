@@ -16,7 +16,12 @@ if command -v poetry >/dev/null 2>&1; then
   
   # Install build tools in the venv using pip (workaround for Poetry metadata issues)
   echo "Installing build tools (cmake, ninja, conan) in venv..."
-  "${POETRY_VENV}/bin/pip" install -q cmake ninja conan
+  if [ -f "${POETRY_VENV}/bin/pip" ]; then
+    "${POETRY_VENV}/bin/pip" install -q cmake ninja conan
+  else
+    echo "Warning: pip not found in venv, trying direct install..."
+    python3 -m pip install --user -q cmake ninja conan 2>/dev/null || true
+  fi
 else
   echo "ERROR: Poetry not found. Install via: pipx install poetry"
   exit 1
