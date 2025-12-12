@@ -3,6 +3,9 @@
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_SYSTEM_PROCESSOR arm)
 
+# Skip CMake's compiler test for bare-metal (it will fail without startup/linker script)
+set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+
 # Check if ARM_NONE_EABI_BIN is set and not empty, otherwise try system compiler, else use native
 if(DEFINED ENV{ARM_NONE_EABI_BIN} AND NOT "$ENV{ARM_NONE_EABI_BIN}" STREQUAL "")
   set(TOOLCHAIN_BIN $ENV{ARM_NONE_EABI_BIN})

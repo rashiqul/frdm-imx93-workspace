@@ -30,3 +30,9 @@ endif()
 # Tune flags (adjust per your CPU/features)
 set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -O2 -pipe -fPIC")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -pipe -fPIC")
+
+# Prevent finding host libraries during cross-compilation
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)

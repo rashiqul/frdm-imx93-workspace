@@ -1,5 +1,11 @@
 #include <stdint.h>
 
+// Minimal stub for bare-metal (newlib needs this)
+void _exit(int status) {
+    (void)status;
+    while(1) {}  // Hang forever on exit
+}
+
 volatile uint32_t counter = 0;
 
 int main(void) {
