@@ -73,3 +73,6 @@ graph_info.json
 *.img
 *.dtb
 *.dtbo
+
+# Downloaded NXP toolchains (large binaries)
+toolchains/nxp/

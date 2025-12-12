@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../" && pwd)"
-TARGET="${TARGET:-native}"
+TARGET="${TARGET:-a55}"
 BUILD_DIR="${ROOT_DIR}/build/${TARGET}"
 
 source "${ROOT_DIR}/scripts/setup_env.sh"
