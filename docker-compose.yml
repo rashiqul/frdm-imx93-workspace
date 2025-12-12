@@ -8,13 +8,14 @@ services:
       target: dev
     container_name: imx93-dev-env
     image: imx93-dev-env:latest
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
       # Mount the entire project directory
       - .:/workspace
-      # Persist Poetry cache
-      - poetry-cache:/root/.cache/pypoetry
-      # Persist Conan cache
-      - conan-cache:/root/.conan2
+      # Persist Poetry cache (use host user home)
+      - poetry-cache:/home/user/.cache/pypoetry
+      # Persist Conan cache (use host user home)
+      - conan-cache:/home/user/.conan2
     working_dir: /workspace
     # Keep container running
     stdin_open: true
@@ -26,6 +27,8 @@ services:
       - ARM_NONE_EABI_BIN=/usr/bin
       - CONAN_PROFILE=default
       - POETRY_VIRTUALENVS_IN_PROJECT=true
+      - HOME=/home/user
+      - USER=user
     # Optional: limit resources
     # deploy:
     #   resources:

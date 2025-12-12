@@ -116,9 +116,9 @@ run-docker:
 	fi
 	@if [ -n "$(DOCKER_COMPOSE_CMD)" ]; then \
 		if echo "$(DOCKER_COMPOSE_CMD)" | grep -q "docker compose"; then \
-			docker compose run --rm imx93-dev bash; \
+			UID=$(shell id -u) GID=$(shell id -g) docker compose run --rm imx93-dev bash; \
 		else \
-			docker-compose run --rm imx93-dev bash; \
+			UID=$(shell id -u) GID=$(shell id -g) docker-compose run --rm imx93-dev bash; \
 		fi; \
 	else \
 		echo "❌ Docker Compose not found!"; \

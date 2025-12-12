@@ -71,9 +71,20 @@ RUN apt-get update && apt-get install -y \
     nano \
     htop \
     tree \
+    sudo \
     && rm -rf /var/lib/apt/lists/*
 
-CMD ["/bin/bash"]
+# Create a user group and user that will match host UID/GID
+# Default to 1000:1000 but docker-compose will override with actual host values
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+RUN groupadd -g ${GROUP_ID} -o user && \
+    useradd -u ${USER_ID} -g ${GROUP_ID} -o -m -s /bin/bash user && \
+    echo "user ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Ensure Poetry/Conan cache directories have correct permissions
+RUN mkdir -p /home/user/.cache/pypoetry /home/user/.conan2 && \
+    chown -R ${USER_ID}:${GROUP_ID} /home/user
 
 # Install Python dependencies and build tools
 RUN cd /workspace/python && poetry install
