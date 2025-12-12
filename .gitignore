@@ -76,3 +76,4 @@ graph_info.json
 
 # Downloaded NXP toolchains (large binaries)
 toolchains/nxp/
+.vscode/

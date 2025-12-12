@@ -11,8 +11,6 @@ services:
     volumes:
       # Mount the entire project directory
       - .:/workspace
-      # Persist build artifacts
-      - build-cache:/workspace/build
       # Persist Poetry cache
       - poetry-cache:/root/.cache/pypoetry
       # Persist Conan cache
@@ -36,6 +34,5 @@ services:
     #       memory: 8G
 
 volumes:
-  build-cache:
   poetry-cache:
   conan-cache:
